@@ -16,9 +16,14 @@ let generateOldMessage = (from, text, createdAt)=>{
     };
 };
 
+let generateError = (err)=>{
+    return{
+        err
+    }
+}
 
 module.exports = {
     generateMessage:generateMessage,
-    // generateLocationMessage:generateLocationMessage,
-    generateOldMessage:generateOldMessage
+    generateOldMessage:generateOldMessage,
+    generateError:generateError
 }

@@ -53,6 +53,16 @@ socket.on('newMessage', function (message) {
     scrollToBottom();
 });
 
+socket.on('notRegistered',(message)=>{
+    if(message.err){
+        alert(message.err);
+        window.location.href = '/';
+    }
+    else{
+        console.log('no err');
+    }
+});
+
 socket.on('oldMessage', function (message) {
     const template = document.querySelector('#message-template').innerHTML;
     const html = Mustache.render(template, {

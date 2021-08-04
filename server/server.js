@@ -6,7 +6,7 @@ const socketIO = require('socket.io');
 const mysql = require('mysql2');
 const cors = require('cors');
 
-const {generateMessage, generateOldMessage} = require('./utils/message');
+const {generateMessage, generateOldMessage, generateError} = require('./utils/message');
 const {isRealString} = require('./utils/isRealString');
 const {Users} = require('./utils/users');
 
@@ -90,9 +90,8 @@ io.on('connection', (socket) => {
         con.query(query, function (error, result, fields) {
             if (error) {
                 console.log(error.message);
-                return error;
             }
-            console.log("result[0]", result[0]);
+            console.log("result[0] start", result);
             if (result[0] != null) {
                 console.log(" null")
                 if (user && isRealString(message.text)) {
@@ -103,6 +102,9 @@ io.on('connection', (socket) => {
                     });
                     io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
                 }
+            }
+            else{
+                socket.emit('notRegistered',generateError('User not registered'));
             }
         });
 
