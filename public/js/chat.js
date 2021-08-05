@@ -64,11 +64,12 @@ socket.on('notRegistered',(message)=>{
 });
 
 socket.on('oldMessage', function (message) {
+    const formattedTime = moment(message.createdAt).add(5.5,'hours').format('LT');
     const template = document.querySelector('#message-template').innerHTML;
     const html = Mustache.render(template, {
         from: message.from,
         text: message.text,
-        createdAt: message.createdAt
+        createdAt: formattedTime
     });
 
     const div = document.createElement('div');
@@ -76,7 +77,9 @@ socket.on('oldMessage', function (message) {
 
     document.querySelector('#messages').appendChild(div);
     scrollToBottom();
-});
+    });
+
+    
 
 
 document.querySelector('#submit-btn').addEventListener('click', function (e) {

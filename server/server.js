@@ -19,10 +19,10 @@ const con = mysql.createConnection({
     password: process.env.RDS_PASSWORD,
     port: process.env.RDS_PORT,
     // database: process.env.RDS_DATABASE
-    // host: "localhost",
-    // user: "root",
-    // password: "abcd1234",
-    // port: 3306
+    // host: process.env.LOCAL_HOSTNAME,
+    // user: process.env.LOACAL_USERNAME,
+    // password: process.env.LOCAL_PASSWORD,
+    // port: process.env.LOCAL_PORT
 });
 
 const executeQuery = (inQuery) => {
@@ -65,10 +65,9 @@ io.on('connection', (socket) => {
                 return error;
             }
             result.map(row => {
-                socket.emit('newMessage', generateOldMessage(row.userId, row.msg, row.date_time));
+                socket.emit('oldMessage', generateOldMessage(row.userId, row.msg, row.date_time));
             });
         });
-        // executeQuery(query);
         query = `insert into rooms (userId, roomId)
                  values ('${params.name}', '${params.room}');`;
         executeQuery(query);
