@@ -14,30 +14,28 @@ var app = express();
 app.use(cors());
 
 const con = mysql.createConnection({
-    // host: process.env.RDS_HOSTNAME,
-    // user: process.env.RDS_USERNAME,
-    // password: process.env.RDS_PASSWORD,
-    // port: process.env.RDS_PORT,
+    host: process.env.RDS_HOSTNAME,
+    user: process.env.RDS_USERNAME,
+    password: process.env.RDS_PASSWORD,
+    port: process.env.RDS_PORT,
     // database: process.env.RDS_DATABASE
-    host: "localhost",
-    user: "root",
-    password: "abcd1234",
-    port: 3306
+    // host: "localhost",
+    // user: "root",
+    // password: "abcd1234",
+    // port: 3306
 });
 
-const executeQuery = function (inQuery) {
-    console.log("hi", inQuery)
-    return con.connect(function (err) {
+const executeQuery = (inQuery) => {
+    return con.connect((err) => {
         if (err) {
             console.log(err);
             return err;
         }
-        con.query(inQuery, function (error, result, fields) {
+        con.query(inQuery, (error, result, fields) => {
             if (error) {
                 console.log(error.message);
                 return error;
             }
-            console.log(result);
         });
     });
 }
@@ -46,7 +44,6 @@ const publicPath = path.join(__dirname, '/../public');
 let server = http.createServer(app);
 let io = socketIO(server);
 let users = new Users();
-let currentUser;
 
 app.use(express.static(publicPath));
 
@@ -58,8 +55,6 @@ io.on('connection', (socket) => {
         }
         socket.join(params.room);
         users.removeUser(socket.id);
-        let room = params.room;
-        currentUser = params.name;
         users.addUser(socket.id, params.name, params.room);
         let query = `select *
                      from messages
@@ -75,7 +70,7 @@ io.on('connection', (socket) => {
         });
         // executeQuery(query);
         query = `insert into rooms (userId, roomId)
-                 values ('${currentUser}', '${room}');`;
+                 values ('${params.name}', '${params.room}');`;
         executeQuery(query);
         io.to(params.room).emit('updateUsersList', users.getUserList(params.room));
         socket.emit('newMessage', generateMessage('Admin', 'Welcome to chat app!'));
@@ -97,14 +92,11 @@ io.on('connection', (socket) => {
                 if (user && isRealString(message.text)) {
                     const query = `insert into messages (userId, roomId, msg)
                                    values ('${user.name}', '${user.room}', '${message.text}');`;
-                    executeQuery(query, result => {
-                        console.log(result)
-                    });
+                    executeQuery(query);
                     io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
                 }
-            }
-            else{
-                socket.emit('notRegistered',generateError('User not registered'));
+            } else {
+                socket.emit('notRegistered', generateError('User not registered'));
             }
         });
 
@@ -125,12 +117,11 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`server started on port ${PORT}`);
-    con.connect(function (err) {
+    con.connect((err) => {
         if (err) {
             console.log(err);
             return new Error(err.message);
         }
-
         con.query('CREATE DATABASE IF NOT EXISTS chat;');
         con.query('USE chat;');
         con.query('CREATE TABLE IF NOT EXISTS users (userId varchar(50) not null primary key);', function (error, result, fields) {
@@ -160,6 +151,5 @@ server.listen(PORT, () => {
                 console.log(error.message)
             }
         });
-        // con.end();
     });
 });
